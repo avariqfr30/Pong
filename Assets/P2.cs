@@ -5,13 +5,14 @@ using UnityEngine;
 public class P2 : MonoBehaviour
 {
     public float moveSpeed;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private float minY = -4f;  // Adjust based on your court height
+    private float maxY = 4f;   // Adjust based on your court height
+    
     void Start()
     {
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         bool isPressingUp = Input.GetKey(KeyCode.UpArrow);
@@ -19,11 +20,16 @@ public class P2 : MonoBehaviour
 
         if (isPressingUp)
         {
-            transform.Translate(Vector2.up * Time.deltaTime);
+            transform.Translate(Vector2.up * moveSpeed * Time.deltaTime);
         }
         if (isPressingDown)
         {
-            transform.Translate(Vector2.down * Time.deltaTime);
+            transform.Translate(Vector2.down * moveSpeed * Time.deltaTime);
         }
+        
+        // Clamp paddle position to court boundaries
+        Vector3 pos = transform.position;
+        pos.y = Mathf.Clamp(pos.y, minY, maxY);
+        transform.position = pos;
     }
 }
