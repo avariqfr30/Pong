@@ -119,6 +119,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &111118569
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 111118571}
+  - component: {fileID: 111118570}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &111118570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111118569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68b01b36bc3ff4a5fb82a9abd087556b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  player1ScoreText: {fileID: 0}
+  player2ScoreText: {fileID: 0}
+  winnerText: {fileID: 0}
+  ballStartPosition: {x: 0, y: 0, z: 0}
+  resetDelay: 1.5
+--- !u!4 &111118571
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111118569}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.62651, y: 0.23679, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &358892603
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,6 +180,7 @@ GameObject:
   - component: {fileID: 358892605}
   - component: {fileID: 358892604}
   - component: {fileID: 358892607}
+  - component: {fileID: 358892608}
   m_Layer: 0
   m_Name: Paddle2
   m_TagString: Untagged
@@ -270,7 +320,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9aa962957b0c04198a2a76d2838b32b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::P2
-  moveSpeed: 10
+  moveSpeed: 25
+--- !u!114 &358892608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358892603}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7133a616de948c5ab2fc8913cabfd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaddleCollision
+  bounceForce: 15
+  maxBounceAngle: 75
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -504,6 +568,7 @@ GameObject:
   - component: {fileID: 1113967239}
   - component: {fileID: 1113967238}
   - component: {fileID: 1113967241}
+  - component: {fileID: 1113967242}
   m_Layer: 0
   m_Name: Paddle1
   m_TagString: Untagged
@@ -643,7 +708,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75aed01bd0f144ea1958c5c06e819879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  moveSpeed: 10
+  moveSpeed: 25
+--- !u!114 &1113967242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1113967237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7133a616de948c5ab2fc8913cabfd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PaddleCollision
+  bounceForce: 15
+  maxBounceAngle: 75
 --- !u!1 &1211074023
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,9 +736,10 @@ GameObject:
   - component: {fileID: 1211074025}
   - component: {fileID: 1211074024}
   - component: {fileID: 1211074028}
+  - component: {fileID: 1211074029}
   m_Layer: 0
   m_Name: Ball
-  m_TagString: Untagged
+  m_TagString: Ball
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -825,6 +905,62 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   rb: {fileID: 1211074024}
   startingSpeed: 5
+--- !u!114 &1211074029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211074023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 659abd60ccd014c84a17170afd64dff3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallBounce
+--- !u!1 &1276724732
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1276724734}
+  - component: {fileID: 1276724733}
+  m_Layer: 0
+  m_Name: UISetup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1276724733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276724732}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4868578bc560541d6b544d9e03e5f8a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UISetup
+--- !u!4 &1276724734
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276724732}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.62651, y: 0.23679, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1418404752
 GameObject:
   m_ObjectHideFlags: 0
@@ -1112,3 +1248,5 @@ SceneRoots:
   - {fileID: 358892606}
   - {fileID: 1464238873}
   - {fileID: 1418404755}
+  - {fileID: 111118571}
+  - {fileID: 1276724734}
