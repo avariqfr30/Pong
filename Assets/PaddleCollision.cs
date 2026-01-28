@@ -27,7 +27,7 @@ public class PaddleCollision : MonoBehaviour
     /// <summary>
     /// Handle ball collision with paddle
     /// Implements realistic ping-pong bounce based on paddle hit position
-    /// Preserves ball speed to prevent acceleration
+    /// Different zones of the paddle create different reflection angles
     /// </summary>
     private void HandlePaddleHit(Collision2D collision)
     {
@@ -39,11 +39,15 @@ public class PaddleCollision : MonoBehaviour
         Vector2 paddleCenter = transform.position;
 
         // Calculate where on the paddle the ball hit (normalized to -1 to 1)
+        // -1 = bottom, 0 = center, 1 = top
         float paddleHeight = GetComponent<Collider2D>().bounds.size.y;
         float hitPosition = (hitPoint.y - paddleCenter.y) / (paddleHeight * 0.5f);
         hitPosition = Mathf.Clamp(hitPosition, -1f, 1f);
 
         // Calculate bounce angle based on hit position
+        // Top of paddle: upward angle
+        // Center of paddle: straight horizontal
+        // Bottom of paddle: downward angle
         float bounceAngle = hitPosition * maxBounceAngle * Mathf.Deg2Rad;
 
         // Determine direction (left paddle bounces right, right paddle bounces left)
@@ -52,7 +56,7 @@ public class PaddleCollision : MonoBehaviour
         // Preserve current ball speed instead of using fixed bounceForce
         float currentSpeed = ballRb.linearVelocity.magnitude;
         
-        // Calculate new velocity while maintaining speed
+        // Calculate new velocity maintaining speed
         float vx = Mathf.Cos(bounceAngle) * currentSpeed * direction;
         float vy = Mathf.Sin(bounceAngle) * currentSpeed;
 

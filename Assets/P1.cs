@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class P1 : MonoBehaviour
 {
-    public float moveSpeed;
+    public float moveSpeed = 10f; // Default move speed if not set
     private float minY = -4f;  // Adjust based on your court height
     private float maxY = 4f;   // Adjust based on your court height
     
@@ -15,21 +15,48 @@ public class P1 : MonoBehaviour
 
     void Update()
     {
-        bool isPressingUp = Input.GetKey(KeyCode.W);
-        bool isPressingDown = Input.GetKey(KeyCode.S);
-
-        if (isPressingUp)
+        Vector3 currentPos = transform.position;
+        float moveInput = 0f;
+        
+        // Keyboard input: W and S
+        if (Input.GetKey(KeyCode.W))
         {
-            transform.Translate(Vector2.up * moveSpeed * Time.deltaTime);
+            moveInput = 1f;
         }
-        if (isPressingDown)
+        else if (Input.GetKey(KeyCode.S))
         {
-            transform.Translate(Vector2.down * moveSpeed * Time.deltaTime);
+            moveInput = -1f;
+        }
+        
+        // Mouse/trackpad movement
+        if (moveInput == 0f) // Only use mouse if not pressing keys
+        {
+            // Get mouse position in screen space
+            Vector3 mouseScreenPos = Input.mousePosition;
+            // Convert to viewport space (0 to 1)
+            Vector3 mouseViewportPos = Camera.main.ScreenToViewportPoint(mouseScreenPos);
+            // Get camera's world position and size for 2D
+            Camera cam = Camera.main;
+            float camHeight = cam.orthographicSize * 2f;
+            float mouseWorldY = cam.transform.position.y + (mouseViewportPos.y - 0.5f) * camHeight;
+            
+            float yDifference = mouseWorldY - currentPos.y;
+            float deadZone = 0.1f;
+            
+            if (Mathf.Abs(yDifference) > deadZone)
+            {
+                moveInput = Mathf.Sign(yDifference);
+            }
+        }
+        
+        // Apply movement
+        if (moveInput != 0f)
+        {
+            currentPos.y += moveInput * moveSpeed * Time.deltaTime;
         }
         
         // Clamp paddle position to court boundaries
-        Vector3 pos = transform.position;
-        pos.y = Mathf.Clamp(pos.y, minY, maxY);
-        transform.position = pos;
+        currentPos.y = Mathf.Clamp(currentPos.y, minY, maxY);
+        transform.position = currentPos;
     }
 }
