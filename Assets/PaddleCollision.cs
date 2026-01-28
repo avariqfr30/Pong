@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class PaddleCollision : MonoBehaviour
 {
-    public float bounceForce = 15f;
-    public float maxBounceAngle = 75f; // Maximum angle the ball can bounce (in degrees)
+    public float maxBounceAngle = 85f; // Maximum angle the ball can bounce (in degrees) - closer to 90 for sharper edges
+    public float centerDeadZone = 0.15f; // Zone where the ball bounces perfectly horizontal
 
     private Rigidbody2D ballRb;
     private Ball ballScript;
@@ -27,7 +27,8 @@ public class PaddleCollision : MonoBehaviour
     /// <summary>
     /// Handle ball collision with paddle
     /// Implements realistic ping-pong bounce based on paddle hit position
-    /// Different zones of the paddle create different reflection angles
+    /// Center zone: horizontal bounce (perfect)
+    /// Edge zones: progressively steeper angles (up to 85 degrees)
     /// </summary>
     private void HandlePaddleHit(Collision2D collision)
     {
@@ -45,15 +46,26 @@ public class PaddleCollision : MonoBehaviour
         hitPosition = Mathf.Clamp(hitPosition, -1f, 1f);
 
         // Calculate bounce angle based on hit position
-        // Top of paddle: upward angle
-        // Center of paddle: straight horizontal
-        // Bottom of paddle: downward angle
-        float bounceAngle = hitPosition * maxBounceAngle * Mathf.Deg2Rad;
+        // Center zone: perfectly horizontal (0 degrees)
+        // Edge zones: progressively sharper angles
+        float bounceAngle;
+        
+        if (Mathf.Abs(hitPosition) < centerDeadZone)
+        {
+            // Center hit: perfectly horizontal
+            bounceAngle = 0f;
+        }
+        else
+        {
+            // Map the hit position outside dead zone to full angle range
+            float normalizedPos = (Mathf.Abs(hitPosition) - centerDeadZone) / (1f - centerDeadZone);
+            bounceAngle = normalizedPos * maxBounceAngle * Mathf.Sign(hitPosition) * Mathf.Deg2Rad;
+        }
 
         // Determine direction (left paddle bounces right, right paddle bounces left)
         float direction = transform.position.x < 0 ? 1f : -1f;
 
-        // Preserve current ball speed instead of using fixed bounceForce
+        // Preserve current ball speed
         float currentSpeed = ballRb.linearVelocity.magnitude;
         
         // Calculate new velocity maintaining speed
