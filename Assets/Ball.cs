@@ -17,12 +17,17 @@ public class Ball : MonoBehaviour
 
     void Start()
     {
-        gameManager = FindAnyObjectByType<GameManager>();
+        gameManager = FindObjectOfType<GameManager>();
         startingPosition = transform.position;
         
         // Configure Rigidbody2D for realistic ping-pong physics
         ConfigurePhysics();
-        LaunchBall();
+        
+        // Don't launch ball initially - wait for game to start
+        if (gameManager != null && gameManager.IsGameActive())
+        {
+            LaunchBall();
+        }
     }
 
     /// <summary>

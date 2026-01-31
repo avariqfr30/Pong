@@ -16,15 +16,23 @@ public class UISetup : MonoBehaviour
     /// </summary>
     private void CreateUI()
     {
-        // Find or create Canvas
-        Canvas canvas = FindAnyObjectByType<Canvas>();
+        // Find existing Canvas or create one
+        Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas == null)
         {
             GameObject canvasGO = new GameObject("Canvas");
             canvas = canvasGO.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvasGO.AddComponent<CanvasScaler>();
-            canvasGO.AddComponent<GraphicRaycaster>();
+            CanvasScaler scaler = canvasGO.AddComponent<CanvasScaler>();
+            GraphicRaycaster raycaster = canvasGO.AddComponent<GraphicRaycaster>();
+        }
+
+        // Ensure EventSystem exists for UI interaction
+        if (FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            GameObject eventSystemGO = new GameObject("EventSystem");
+            eventSystemGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            eventSystemGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
         }
 
         // Create Player 1 Score Text (Top Left, above player area)
@@ -46,14 +54,36 @@ public class UISetup : MonoBehaviour
         winnerText.fontSize = 40;
         winnerText.gameObject.SetActive(false); // Hidden until someone wins
 
+        // Create Start Menu Panel
+        GameObject startMenuPanel = CreatePanel("StartMenuPanel", canvas.transform);
+        CreateMenuText("PONG", startMenuPanel.transform, new Vector2(0, 100));
+        CreateMenuText("Press START to begin", startMenuPanel.transform, new Vector2(0, 0));
+        Button startButton = CreateButton("StartButton", startMenuPanel.transform, new Vector2(0, -100), "START");
+
+        // Create Game Over Panel
+        GameObject gameOverPanel = CreatePanel("GameOverPanel", canvas.transform);
+        CreateMenuText("GAME OVER", gameOverPanel.transform, new Vector2(0, 100));
+        Button restartButton = CreateButton("RestartButton", gameOverPanel.transform, new Vector2(-120, -80), "RESTART");
+        Button menuButton = CreateButton("MenuButton", gameOverPanel.transform, new Vector2(120, -80), "MENU");
+
         // Assign to GameManager
-        GameManager gameManager = FindAnyObjectByType<GameManager>();
+        GameManager gameManager = FindObjectOfType<GameManager>();
         if (gameManager != null)
         {
             gameManager.player1ScoreText = p1ScoreText;
             gameManager.player2ScoreText = p2ScoreText;
             gameManager.winnerText = winnerText;
+            gameManager.startMenuPanel = startMenuPanel;
+            gameManager.gameOverPanel = gameOverPanel;
+            gameManager.startButton = startButton;
+            gameManager.restartButton = restartButton;
+            gameManager.menuButton = menuButton;
             Debug.Log("UI elements created and assigned to GameManager");
+            Debug.Log($"Start Menu Panel: {startMenuPanel != null}, Game Over Panel: {gameOverPanel != null}");
+            Debug.Log($"Start Button: {startButton != null}, Restart Button: {restartButton != null}, Menu Button: {menuButton != null}");
+            
+            // Notify GameManager that UI is ready
+            gameManager.OnUIRready();
         }
         else
         {
@@ -102,24 +132,89 @@ public class UISetup : MonoBehaviour
         // Add TextMeshProUGUI
         TextMeshProUGUI textComponent = textGO.AddComponent<TextMeshProUGUI>();
         textComponent.text = "Text";
-        textComponent.alignment = ConvertAnchorToAlignment(alignment);
         textComponent.color = Color.white;
 
         return textGO;
     }
 
     /// <summary>
-    /// Convert TextAnchor to TextAlignmentOptions
+    /// Helper method to create a panel
     /// </summary>
-    private TextAlignmentOptions ConvertAnchorToAlignment(TextAnchor anchor)
+    private GameObject CreatePanel(string name, Transform parent)
     {
-        return anchor switch
-        {
-            TextAnchor.UpperLeft => TextAlignmentOptions.TopLeft,
-            TextAnchor.UpperRight => TextAlignmentOptions.TopRight,
-            TextAnchor.UpperCenter => TextAlignmentOptions.Top,
-            TextAnchor.MiddleCenter => TextAlignmentOptions.Center,
-            _ => TextAlignmentOptions.TopLeft,
-        };
+        GameObject panelGO = new GameObject(name);
+        panelGO.transform.SetParent(parent, false);
+
+        // Add RectTransform
+        RectTransform rectTransform = panelGO.AddComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.sizeDelta = new Vector2(600, 400);
+        rectTransform.anchoredPosition = Vector2.zero;
+
+        // Add Image for background
+        Image image = panelGO.AddComponent<Image>();
+        image.color = new Color(0, 0, 0, 0.8f); // Semi-transparent black
+
+        return panelGO;
+    }
+
+    /// <summary>
+    /// Helper method to create menu text
+    /// </summary>
+    private void CreateMenuText(string text, Transform parent, Vector2 position)
+    {
+        GameObject textGO = new GameObject("MenuText");
+        textGO.transform.SetParent(parent, false);
+
+        // Add RectTransform
+        RectTransform rectTransform = textGO.AddComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(400, 100);
+        rectTransform.anchoredPosition = position;
+
+        // Add TextMeshProUGUI
+        TextMeshProUGUI textComponent = textGO.AddComponent<TextMeshProUGUI>();
+        textComponent.text = text;
+        textComponent.color = Color.white;
+        textComponent.fontSize = 48;
+    }
+
+    /// <summary>
+    /// Helper method to create a button
+    /// </summary>
+    private Button CreateButton(string name, Transform parent, Vector2 position, string buttonText)
+    {
+        GameObject buttonGO = new GameObject(name);
+        buttonGO.transform.SetParent(parent, false);
+
+        // Add RectTransform
+        RectTransform rectTransform = buttonGO.AddComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.sizeDelta = new Vector2(200, 60);
+        rectTransform.anchoredPosition = position;
+
+        // Add Image
+        Image image = buttonGO.AddComponent<Image>();
+        image.color = Color.white;
+
+        // Add Button
+        Button button = buttonGO.AddComponent<Button>();
+        button.interactable = true;
+
+        // Add Text
+        GameObject textGO = new GameObject("Text");
+        textGO.transform.SetParent(buttonGO.transform, false);
+
+        RectTransform textRect = textGO.AddComponent<RectTransform>();
+        textRect.sizeDelta = new Vector2(200, 60);
+
+        TextMeshProUGUI textComponent = textGO.AddComponent<TextMeshProUGUI>();
+        textComponent.text = buttonText;
+        textComponent.alignment = TextAlignmentOptions.Center;
+        textComponent.color = Color.black;
+        textComponent.fontSize = 24;
+
+        return button;
     }
 }

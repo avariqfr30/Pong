@@ -12,8 +12,8 @@ public class PaddleCollision : MonoBehaviour
 
     void Start()
     {
-        ballRb = FindAnyObjectByType<Ball>().GetComponent<Rigidbody2D>();
-        ballScript = FindAnyObjectByType<Ball>();
+        ballRb = FindObjectOfType<Ball>().GetComponent<Rigidbody2D>();
+        ballScript = FindObjectOfType<Ball>();
     }
 
     void OnCollisionEnter2D(Collision2D collision)

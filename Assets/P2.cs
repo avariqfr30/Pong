@@ -11,7 +11,7 @@ public class P2 : MonoBehaviour
     
     void Start()
     {
-        ball = FindAnyObjectByType<Ball>();
+        ball = FindObjectOfType<Ball>();
     }
 
     void Update()
