@@ -11,14 +11,19 @@ public class GameManager : MonoBehaviour
     private GameState currentState = GameState.Menu;
 
     // Scoring
-    private int player1Score = 0;
-    private int player2Score = 0;
-    private const int WINNING_SCORE = 11; // Real ping-pong: first to 11 points wins (with 2-point margin rule)
-    private const int MIN_MARGIN = 2; // Must win by 2 points
+    private int player1Points = 0;
+    private int player2Points = 0;
+    private int player1RoundWins = 0;
+    private int player2RoundWins = 0;
+    private int currentRound = 1;
+    private const int POINTS_TO_WIN_ROUND = 5; // Points needed to win a round
+    private const int ROUNDS_TO_WIN_MATCH = 3; // Rounds needed to win the match
 
     // UI References
     public TextMeshProUGUI player1ScoreText;
     public TextMeshProUGUI player2ScoreText;
+    public TextMeshProUGUI roundText;
+    public TextMeshProUGUI pointsText;
     public TextMeshProUGUI winnerText;
     public GameObject startMenuPanel;
     public GameObject gameOverPanel;
@@ -38,7 +43,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         // Immediately disable all game objects on scene load
-        Ball tempBall = FindObjectOfType<Ball>();
+        Ball tempBall = FindFirstObjectByType<Ball>();
         if (tempBall != null)
         {
             ballScript = tempBall;
@@ -46,7 +51,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Disable paddles
-        PaddleCollision[] paddleComponents = FindObjectsOfType<PaddleCollision>();
+        PaddleCollision[] paddleComponents = FindObjectsByType<PaddleCollision>(FindObjectsSortMode.None);
         paddles = new GameObject[paddleComponents.Length];
         for (int i = 0; i < paddleComponents.Length; i++)
         {
@@ -55,7 +60,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Disable walls (any colliders that aren't paddles or ball)
-        Collider2D[] allColliders = FindObjectsOfType<Collider2D>();
+        Collider2D[] allColliders = FindObjectsByType<Collider2D>(FindObjectsSortMode.None);
         List<GameObject> wallList = new List<GameObject>();
         foreach (Collider2D col in allColliders)
         {
@@ -111,9 +116,7 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// Award a point to the specified player and handle ball reset
-    /// Following real ping-pong rules:
-    /// - First to 11 points wins
-    /// - Must win by 2 points
+    /// - 5 points to win a round
     /// - Ball resets after each point
     /// </summary>
     public void AwardPoint(int player)
@@ -122,11 +125,11 @@ public class GameManager : MonoBehaviour
 
         if (player == 1)
         {
-            player1Score++;
+            player1Points++;
         }
         else if (player == 2)
         {
-            player2Score++;
+            player2Points++;
         }
 
         UpdateScoreUI();
@@ -139,21 +142,54 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Check if either player has won based on ping-pong rules
+    /// Handle winning a round
+    /// </summary>
+    private void WinRound(int winner)
+    {
+        if (winner == 1)
+        {
+            player1RoundWins++;
+        }
+        else if (winner == 2)
+        {
+            player2RoundWins++;
+        }
+
+        // Reset points for next round
+        player1Points = 0;
+        player2Points = 0;
+        currentRound++;
+
+        UpdateScoreUI();
+
+        // Check if match is won
+        if (player1RoundWins >= ROUNDS_TO_WIN_MATCH)
+        {
+            EndGame(1);
+        }
+        else if (player2RoundWins >= ROUNDS_TO_WIN_MATCH)
+        {
+            EndGame(2);
+        }
+        // Else, continue to next round
+    }
+
+    /// <summary>
+    /// Check if either player has won the current round
     /// </summary>
     private void CheckWinCondition()
     {
-        // Check if player 1 won
-        if (player1Score >= WINNING_SCORE && (player1Score - player2Score) >= MIN_MARGIN)
+        // Check if player 1 won the round
+        if (player1Points >= POINTS_TO_WIN_ROUND)
         {
-            EndGame(1);
+            WinRound(1);
             return;
         }
 
-        // Check if player 2 won
-        if (player2Score >= WINNING_SCORE && (player2Score - player1Score) >= MIN_MARGIN)
+        // Check if player 2 won the round
+        if (player2Points >= POINTS_TO_WIN_ROUND)
         {
-            EndGame(2);
+            WinRound(2);
             return;
         }
     }
@@ -169,7 +205,7 @@ public class GameManager : MonoBehaviour
             winnerText.text = "Player " + winner + " Wins!";
             winnerText.gameObject.SetActive(true);
         }
-        Debug.Log("Player " + winner + " Wins! Final Score: P1 " + player1Score + " - P2 " + player2Score);
+        Debug.Log("Player " + winner + " Wins! Final Round Wins: P1 " + player1RoundWins + " - P2 " + player2RoundWins);
     }
 
     /// <summary>
@@ -178,10 +214,16 @@ public class GameManager : MonoBehaviour
     private void UpdateScoreUI()
     {
         if (player1ScoreText != null)
-            player1ScoreText.text = player1Score.ToString();
+            player1ScoreText.text = player1RoundWins.ToString();
 
         if (player2ScoreText != null)
-            player2ScoreText.text = player2Score.ToString();
+            player2ScoreText.text = player2RoundWins.ToString();
+
+        if (roundText != null)
+            roundText.text = "Round " + currentRound;
+
+        if (pointsText != null)
+            pointsText.text = player1Points + " - " + player2Points;
     }
 
     /// <summary>
@@ -202,8 +244,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void ResetGame()
     {
-        player1Score = 0;
-        player2Score = 0;
+        player1Points = 0;
+        player2Points = 0;
+        player1RoundWins = 0;
+        player2RoundWins = 0;
+        currentRound = 1;
         if (winnerText != null)
             winnerText.gameObject.SetActive(false);
         UpdateScoreUI();
@@ -284,6 +329,10 @@ public class GameManager : MonoBehaviour
             player1ScoreText.gameObject.SetActive(currentState != GameState.Menu);
         if (player2ScoreText != null)
             player2ScoreText.gameObject.SetActive(currentState != GameState.Menu);
+        if (roundText != null)
+            roundText.gameObject.SetActive(currentState != GameState.Menu);
+        if (pointsText != null)
+            pointsText.gameObject.SetActive(currentState != GameState.Menu);
         
         // Reset ball when starting game
         if (currentState == GameState.Playing && ballScript != null)
@@ -316,16 +365,19 @@ public class GameManager : MonoBehaviour
     public void GoToMenu()
     {
         Debug.Log("GoToMenu button pressed");
-        player1Score = 0;
-        player2Score = 0;
+        player1Points = 0;
+        player2Points = 0;
+        player1RoundWins = 0;
+        player2RoundWins = 0;
+        currentRound = 1;
         if (winnerText != null)
             winnerText.gameObject.SetActive(false);
         UpdateScoreUI();
         SetGameState(GameState.Menu);
     }
 
-    // Getters for current scores
-    public int GetPlayer1Score() => player1Score;
-    public int GetPlayer2Score() => player2Score;
+    // Getters for current round wins
+    public int GetPlayer1Score() => player1RoundWins;
+    public int GetPlayer2Score() => player2RoundWins;
     public bool IsGameActive() => currentState == GameState.Playing;
 }

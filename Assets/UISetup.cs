@@ -47,6 +47,18 @@ public class UISetup : MonoBehaviour
         p2ScoreText.text = "0";
         p2ScoreText.fontSize = 80;
 
+        // Create Round Text (Top Center, below scores)
+        GameObject roundGO = CreateTextElement("RoundText", canvas.transform, new Vector2(0, -150), TextAnchor.UpperCenter);
+        TextMeshProUGUI roundText = roundGO.GetComponent<TextMeshProUGUI>();
+        roundText.text = "Round 1";
+        roundText.fontSize = 40;
+
+        // Create Points Text (Top Center, below round)
+        GameObject pointsGO = CreateTextElement("PointsText", canvas.transform, new Vector2(0, -200), TextAnchor.UpperCenter);
+        TextMeshProUGUI pointsText = pointsGO.GetComponent<TextMeshProUGUI>();
+        pointsText.text = "0 - 0";
+        pointsText.fontSize = 50;
+
         // Create Winner Text (Top Center, smaller)
         GameObject winnerGO = CreateTextElement("WinnerText", canvas.transform, new Vector2(0, -80), TextAnchor.UpperCenter);
         TextMeshProUGUI winnerText = winnerGO.GetComponent<TextMeshProUGUI>();
@@ -72,6 +84,8 @@ public class UISetup : MonoBehaviour
         {
             gameManager.player1ScoreText = p1ScoreText;
             gameManager.player2ScoreText = p2ScoreText;
+            gameManager.roundText = roundText;
+            gameManager.pointsText = pointsText;
             gameManager.winnerText = winnerText;
             gameManager.startMenuPanel = startMenuPanel;
             gameManager.gameOverPanel = gameOverPanel;
